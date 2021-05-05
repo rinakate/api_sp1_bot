@@ -60,7 +60,7 @@ def send_message(message, bot_client):
 def main():
     logging.debug('Запуск бота')
     bot_client = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = 0
+    current_timestamp = int(time.time())
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
