@@ -25,19 +25,24 @@ API_URL = ('https://praktikum.yandex.ru/api/user_api/homework_statuses/')
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
+    statuses = {
+        'reviewing': 'Ревьюер проверяет работу "{homework_name}".',
+        'rejected': (f'У вас проверили работу "{homework_name}"!\n\n'
+                     'К сожалению в работе нашлись ошибки.'),
+        'approved': (f'У вас проверили работу "{homework_name}"!\n\n'
+                     'Ревьюеру всё понравилось, '
+                     'можно приступать к следующему уроку.')
+    }
+    verdict = statuses.get(homework_status)
     if homework_status is None or homework_name is None:
         logging.error('Данные отсутствуют', exc_info=True)
-    elif homework_status == 'reviewing':
-        verdict = 'Ревьюер проверяет работу.'
-    elif homework_status == 'rejected':
-        verdict = 'К сожалению в работе нашлись ошибки.'
+        return 'Неверный ответ сервера'
     else:
-        verdict = ('Ревьюеру всё понравилось, '
-                   'можно приступать к следующему уроку.')
-    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+        return f'{verdict}'
 
 
 def get_homework_statuses(current_timestamp):
+    current_timestamp = current_timestamp or int(time.time())
     params = {'from_date': current_timestamp}
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     try:
@@ -75,7 +80,7 @@ def main():
             time.sleep(1200)  # опрашивать раз в двадцать минут
 
         except Exception as e:
-            print(f'Бот столкнулся с ошибкой: {e}')
+            logging.exception(f'Бот упал с ошибкой: {e}')
             time.sleep(5)
 
 
